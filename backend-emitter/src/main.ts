@@ -14,6 +14,6 @@ async function bootstrap() {
   });
 
   await app.listen();
-  console.log('Email service escutando a fila....');
+  console.log('Email service escutando a fila...');
 }
 bootstrap();
