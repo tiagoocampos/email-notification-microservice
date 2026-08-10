@@ -14,17 +14,16 @@ export class MailService {
     });
 
     async sendVerificationEmail(to: string, name: string, verifyUrl: string) {
-        await this.transporter.sendMail({
-            from: `"Expenses Control" <${process.env.SMTP_USER}>`,
-            to,
-            subject: 'Confirme seu email',
-            html: `
-      <p>Olá, ${name}!</p>
-      <p>Clique no link abaixo para confirmar seu email:</p>
-      <a href="${verifyUrl}">${verifyUrl}</a>
-    `,
-        });
-
-        console.log('Email de verificação enviado para', to);
+        try {
+            const info = await this.transporter.sendMail({
+                from: `"Expenses Control" <${process.env.SMTP_USER}>`,
+                to,
+                subject: 'Confirme seu email',
+                html: `<p>Olá, ${name}!</p><p>Clique no link abaixo para confirmar seu email:</p><a href="${verifyUrl}">${verifyUrl}</a>`,
+            });
+            console.log('Email enviado com sucesso:', info.messageId);
+        } catch (error) {
+            console.error('ERRO ao enviar email:', error);
+        }
     }
 }
