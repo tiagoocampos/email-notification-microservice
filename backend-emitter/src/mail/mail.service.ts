@@ -1,29 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 
 @Injectable()
 export class MailService {
-    private transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: Number(process.env.SMTP_PORT),
-        secure: false,
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    });
+    private resend = new Resend(process.env.RESEND_API_KEY);
 
     async sendVerificationEmail(to: string, name: string, verifyUrl: string) {
         try {
-            const info = await this.transporter.sendMail({
-                from: `"Expenses Control" <${process.env.SMTP_USER}>`,
+            const { data, error } = await this.resend.emails.send({
+                from: 'Expenses Control <onboarding@resend.dev>',
                 to,
                 subject: 'Confirme seu email',
                 html: `<p>Olá, ${name}!</p><p>Clique no link abaixo para confirmar seu email:</p><a href="${verifyUrl}">${verifyUrl}</a>`,
             });
-            console.log('Email enviado com sucesso:', info.messageId);
-        } catch (error) {
-            console.error('ERRO ao enviar email:', error);
+
+            if (error) {
+                console.error('Erro ao enviar email:', error);
+                return;
+            }
+            console.log('Email enviado, id:', data?.id);
+        } catch (err) {
+            console.error('Exceção ao enviar email:', err);
         }
     }
 }
