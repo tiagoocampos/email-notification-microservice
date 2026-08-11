@@ -1,26 +1,23 @@
 import { Injectable } from '@nestjs/common';
-import { Resend } from 'resend';
+import { BrevoClient } from '@getbrevo/brevo';
 
 @Injectable()
 export class MailService {
-    private resend = new Resend(process.env.RESEND_API_KEY);
+    private brevo = new BrevoClient({
+        apiKey: process.env.BREVO_API_KEY!,
+    });
 
     async sendVerificationEmail(to: string, name: string, verifyUrl: string) {
         try {
-            const { data, error } = await this.resend.emails.send({
-                from: 'Expenses Control <onboarding@resend.dev>',
-                to,
+            const result = await this.brevo.transactionalEmails.sendTransacEmail({
+                sender: { email: process.env.BREVO_SENDER_EMAIL!, name: 'Expenses Control' },
+                to: [{ email: to, name }],
                 subject: 'Confirme seu email',
-                html: `<p>Olá, ${name}!</p><p>Clique no link abaixo para confirmar seu email:</p><a href="${verifyUrl}">${verifyUrl}</a>`,
+                htmlContent: `<p>Olá, ${name}!</p><p>Clique no link abaixo para confirmar seu email:</p><a href="${verifyUrl}">${verifyUrl}</a>`,
             });
-
-            if (error) {
-                console.error('Erro ao enviar email:', error);
-                return;
-            }
-            console.log('Email enviado, id:', data?.id);
+            console.log('Email enviado:', result);
         } catch (err) {
-            console.error('Exceção ao enviar email:', err);
+            console.error('Erro ao enviar email:', err);
         }
     }
 }
